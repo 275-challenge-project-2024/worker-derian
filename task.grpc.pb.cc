@@ -23,6 +23,7 @@ namespace worker {
 
 static const char* Scheduler_method_names[] = {
   "/worker.Scheduler/SubmitTask",
+  "/worker.Scheduler/Heartbeat",
 };
 
 std::unique_ptr< Scheduler::Stub> Scheduler::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -33,6 +34,7 @@ std::unique_ptr< Scheduler::Stub> Scheduler::NewStub(const std::shared_ptr< ::gr
 
 Scheduler::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
   : channel_(channel), rpcmethod_SubmitTask_(Scheduler_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Heartbeat_(Scheduler_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::BIDI_STREAMING, channel)
   {}
 
 ::grpc::Status Scheduler::Stub::SubmitTask(::grpc::ClientContext* context, const ::worker::Task& request, ::worker::TaskStatus* response) {
@@ -58,6 +60,22 @@ void Scheduler::Stub::async::SubmitTask(::grpc::ClientContext* context, const ::
   return result;
 }
 
+::grpc::ClientReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* Scheduler::Stub::HeartbeatRaw(::grpc::ClientContext* context) {
+  return ::grpc::internal::ClientReaderWriterFactory< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>::Create(channel_.get(), rpcmethod_Heartbeat_, context);
+}
+
+void Scheduler::Stub::async::Heartbeat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::worker::HeartBeatRequest,::worker::HeartBeatResponse>* reactor) {
+  ::grpc::internal::ClientCallbackReaderWriterFactory< ::worker::HeartBeatRequest,::worker::HeartBeatResponse>::Create(stub_->channel_.get(), stub_->rpcmethod_Heartbeat_, context, reactor);
+}
+
+::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* Scheduler::Stub::AsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>::Create(channel_.get(), cq, rpcmethod_Heartbeat_, context, true, tag);
+}
+
+::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* Scheduler::Stub::PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>::Create(channel_.get(), cq, rpcmethod_Heartbeat_, context, false, nullptr);
+}
+
 Scheduler::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       Scheduler_method_names[0],
@@ -69,6 +87,16 @@ Scheduler::Service::Service() {
              ::worker::TaskStatus* resp) {
                return service->SubmitTask(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      Scheduler_method_names[1],
+      ::grpc::internal::RpcMethod::BIDI_STREAMING,
+      new ::grpc::internal::BidiStreamingHandler< Scheduler::Service, ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>(
+          [](Scheduler::Service* service,
+             ::grpc::ServerContext* ctx,
+             ::grpc::ServerReaderWriter<::worker::HeartBeatResponse,
+             ::worker::HeartBeatRequest>* stream) {
+               return service->Heartbeat(ctx, stream);
+             }, this)));
 }
 
 Scheduler::Service::~Service() {
@@ -78,6 +106,12 @@ Scheduler::Service::~Service() {
   (void) context;
   (void) request;
   (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status Scheduler::Service::Heartbeat(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* stream) {
+  (void) context;
+  (void) stream;
   return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
 }
 

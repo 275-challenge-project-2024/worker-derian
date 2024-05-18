@@ -42,11 +42,21 @@ class Scheduler final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::worker::TaskStatus>> PrepareAsyncSubmitTask(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::worker::TaskStatus>>(PrepareAsyncSubmitTaskRaw(context, request, cq));
     }
+    std::unique_ptr< ::grpc::ClientReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> Heartbeat(::grpc::ClientContext* context) {
+      return std::unique_ptr< ::grpc::ClientReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(HeartbeatRaw(context));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> AsyncHeartbeat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(AsyncHeartbeatRaw(context, cq, tag));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> PrepareAsyncHeartbeat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(PrepareAsyncHeartbeatRaw(context, cq));
+    }
     class async_interface {
      public:
       virtual ~async_interface() {}
       virtual void SubmitTask(::grpc::ClientContext* context, const ::worker::Task* request, ::worker::TaskStatus* response, std::function<void(::grpc::Status)>) = 0;
       virtual void SubmitTask(::grpc::ClientContext* context, const ::worker::Task* request, ::worker::TaskStatus* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void Heartbeat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::worker::HeartBeatRequest,::worker::HeartBeatResponse>* reactor) = 0;
     };
     typedef class async_interface experimental_async_interface;
     virtual class async_interface* async() { return nullptr; }
@@ -54,6 +64,9 @@ class Scheduler final {
    private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::worker::TaskStatus>* AsyncSubmitTaskRaw(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::worker::TaskStatus>* PrepareAsyncSubmitTaskRaw(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* HeartbeatRaw(::grpc::ClientContext* context) = 0;
+    virtual ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* AsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) = 0;
+    virtual ::grpc::ClientAsyncReaderWriterInterface< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -65,11 +78,21 @@ class Scheduler final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::worker::TaskStatus>> PrepareAsyncSubmitTask(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::worker::TaskStatus>>(PrepareAsyncSubmitTaskRaw(context, request, cq));
     }
+    std::unique_ptr< ::grpc::ClientReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> Heartbeat(::grpc::ClientContext* context) {
+      return std::unique_ptr< ::grpc::ClientReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(HeartbeatRaw(context));
+    }
+    std::unique_ptr<  ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> AsyncHeartbeat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(AsyncHeartbeatRaw(context, cq, tag));
+    }
+    std::unique_ptr<  ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>> PrepareAsyncHeartbeat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>>(PrepareAsyncHeartbeatRaw(context, cq));
+    }
     class async final :
       public StubInterface::async_interface {
      public:
       void SubmitTask(::grpc::ClientContext* context, const ::worker::Task* request, ::worker::TaskStatus* response, std::function<void(::grpc::Status)>) override;
       void SubmitTask(::grpc::ClientContext* context, const ::worker::Task* request, ::worker::TaskStatus* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void Heartbeat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::worker::HeartBeatRequest,::worker::HeartBeatResponse>* reactor) override;
      private:
       friend class Stub;
       explicit async(Stub* stub): stub_(stub) { }
@@ -83,7 +106,11 @@ class Scheduler final {
     class async async_stub_{this};
     ::grpc::ClientAsyncResponseReader< ::worker::TaskStatus>* AsyncSubmitTaskRaw(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::worker::TaskStatus>* PrepareAsyncSubmitTaskRaw(::grpc::ClientContext* context, const ::worker::Task& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* HeartbeatRaw(::grpc::ClientContext* context) override;
+    ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* AsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) override;
+    ::grpc::ClientAsyncReaderWriter< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_SubmitTask_;
+    const ::grpc::internal::RpcMethod rpcmethod_Heartbeat_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -92,6 +119,7 @@ class Scheduler final {
     Service();
     virtual ~Service();
     virtual ::grpc::Status SubmitTask(::grpc::ServerContext* context, const ::worker::Task* request, ::worker::TaskStatus* response);
+    virtual ::grpc::Status Heartbeat(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* stream);
   };
   template <class BaseClass>
   class WithAsyncMethod_SubmitTask : public BaseClass {
@@ -113,7 +141,27 @@ class Scheduler final {
       ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_SubmitTask<Service > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* /*stream*/)  override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestHeartbeat(::grpc::ServerContext* context, ::grpc::ServerAsyncReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* stream, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncBidiStreaming(1, context, stream, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_SubmitTask<WithAsyncMethod_Heartbeat<Service > > AsyncService;
   template <class BaseClass>
   class WithCallbackMethod_SubmitTask : public BaseClass {
    private:
@@ -141,7 +189,30 @@ class Scheduler final {
     virtual ::grpc::ServerUnaryReactor* SubmitTask(
       ::grpc::CallbackServerContext* /*context*/, const ::worker::Task* /*request*/, ::worker::TaskStatus* /*response*/)  { return nullptr; }
   };
-  typedef WithCallbackMethod_SubmitTask<Service > CallbackService;
+  template <class BaseClass>
+  class WithCallbackMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodCallback(1,
+          new ::grpc::internal::CallbackBidiHandler< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context) { return this->Heartbeat(context); }));
+    }
+    ~WithCallbackMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* /*stream*/)  override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerBidiReactor< ::worker::HeartBeatRequest, ::worker::HeartBeatResponse>* Heartbeat(
+      ::grpc::CallbackServerContext* /*context*/)
+      { return nullptr; }
+  };
+  typedef WithCallbackMethod_SubmitTask<WithCallbackMethod_Heartbeat<Service > > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_SubmitTask : public BaseClass {
@@ -156,6 +227,23 @@ class Scheduler final {
     }
     // disable synchronous version of this method
     ::grpc::Status SubmitTask(::grpc::ServerContext* /*context*/, const ::worker::Task* /*request*/, ::worker::TaskStatus* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* /*stream*/)  override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -181,6 +269,26 @@ class Scheduler final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodRaw(1);
+    }
+    ~WithRawMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* /*stream*/)  override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestHeartbeat(::grpc::ServerContext* context, ::grpc::ServerAsyncReaderWriter< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* stream, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncBidiStreaming(1, context, stream, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawCallbackMethod_SubmitTask : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
@@ -201,6 +309,29 @@ class Scheduler final {
     }
     virtual ::grpc::ServerUnaryReactor* SubmitTask(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodRawCallback(1,
+          new ::grpc::internal::CallbackBidiHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context) { return this->Heartbeat(context); }));
+    }
+    ~WithRawCallbackMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, ::grpc::ServerReaderWriter< ::worker::HeartBeatResponse, ::worker::HeartBeatRequest>* /*stream*/)  override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerBidiReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* Heartbeat(
+      ::grpc::CallbackServerContext* /*context*/)
+      { return nullptr; }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_SubmitTask : public BaseClass {

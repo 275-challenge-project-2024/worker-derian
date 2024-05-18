@@ -15,18 +15,20 @@ using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
+using grpc::ServerReaderWriter;
 using worker::Task;
 using worker::TaskStatus;
 using worker::Scheduler;
+using worker::HeartBeatRequest;
+using worker::HeartBeatResponse;
 
 struct LocalTask {
     int task_id;
     std::string command;
     std::string status;
-    int error_code;
 
     LocalTask(int id, const std::string& cmd)
-        : task_id(id), command(cmd), status("in-progress"), error_code(0) {}
+        : task_id(id), command(cmd), status("in-progress") {}
 };
 
 class Worker {
@@ -80,7 +82,6 @@ private:
                     }
                     else {
                         it->status = "failed";
-                        it->error_code = 1; // You can set any non-zero value for error_code to indicate failure
                     }
                 }
                 current_capacity++;
@@ -124,31 +125,41 @@ public:
         }
     }
 
-    void sendHeartbeat() {
-        std::lock_guard<std::mutex> guard(tasks_mutex);
-        std::cout << "Worker ID: " << worker_id << "\n";
-        std::cout << "Type: " << type << "\n";
-        std::cout << "Total Capacity: " << total_capacity << "\n";
-        std::cout << "Current Capacity: " << current_capacity << "\n";
-        std::cout << "Task List:\n";
-        for (const auto& task : tasks) {
-            auto prev_status_it = previous_statuses.find(task.task_id);
-            if ((task.status == "completed" || task.status == "failed") &&
-                (prev_status_it == previous_statuses.end() || prev_status_it->second != task.status)) {
-                std::cout << "  Task ID: " << task.task_id << ", Status: " << task.status;
-                if (task.status == "failed") {
-                    std::cout << ", Error Code: " << task.error_code;
+    void sendHeartbeat(ServerReaderWriter<HeartBeatResponse, HeartBeatRequest>* stream) {
+        while (true) {
+            {
+                std::lock_guard<std::mutex> guard(tasks_mutex);
+
+                HeartBeatResponse response;
+                response.set_workerid(std::stoi(worker_id));
+                response.set_current_capacity(current_capacity);
+
+                for (const auto& task : tasks) {
+                    auto prev_status_it = previous_statuses.find(task.task_id);
+                    if ((task.status == "completed" || task.status == "failed") &&
+                        (prev_status_it == previous_statuses.end() || prev_status_it->second != task.status)) {
+                        TaskStatus* task_status = response.add_tasks();
+                        task_status->set_taskid(task.task_id);
+                        task_status->set_status(task.status);
+                        previous_statuses[task.task_id] = task.status;
+                    }
                 }
-                std::cout << std::endl;
-                previous_statuses[task.task_id] = task.status;
+                stream->Write(response);
+
+                // Print heartbeat contents
+                std::cout << "Sending Heartbeat:" << std::endl;
+                std::cout << "  Worker ID: " << response.workerid() << std::endl;
+                std::cout << "  Current Capacity: " << response.current_capacity() << std::endl;
+                for (const auto& task_status : response.tasks()) {
+                    std::cout << "  Task ID: " << task_status.taskid() << ", Status: " << task_status.status() << std::endl;
+                }
             }
+            std::this_thread::sleep_for(std::chrono::seconds(2));
         }
-        std::cout << std::endl;
     }
 
     void run() {
         while (true) {
-            sendHeartbeat();
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
@@ -159,14 +170,14 @@ public:
     WorkerService(Worker* worker) : worker_(worker) {}
 
     Status SubmitTask(ServerContext* context, const Task* task, TaskStatus* status) override {
-       // std::cout << "Received task with ID: " << task->taskid()
-         //   << ", Priority: " << task->priority()
-           // << ", Status: " << task->status() << std::endl;
-
         worker_->receiveTask(task->taskid(), task->commands());
-
         status->set_status("Received");
         status->set_taskid(task->taskid());
+        return Status::OK;
+    }
+
+    Status Heartbeat(ServerContext* context, ServerReaderWriter<HeartBeatResponse, HeartBeatRequest>* stream) override {
+        worker_->sendHeartbeat(stream);
         return Status::OK;
     }
 
@@ -176,7 +187,7 @@ private:
 
 void RunServer() {
     std::string server_address("0.0.0.0:50051");
-    Worker worker("13454476000", 1, 20);
+    Worker worker("123", 1, 20);
     WorkerService service(&worker);
 
     ServerBuilder builder;

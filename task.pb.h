@@ -48,6 +48,9 @@ namespace worker {
 class HeartBeatRequest;
 struct HeartBeatRequestDefaultTypeInternal;
 extern HeartBeatRequestDefaultTypeInternal _HeartBeatRequest_default_instance_;
+class HeartBeatResponse;
+struct HeartBeatResponseDefaultTypeInternal;
+extern HeartBeatResponseDefaultTypeInternal _HeartBeatResponse_default_instance_;
 class Task;
 struct TaskDefaultTypeInternal;
 extern TaskDefaultTypeInternal _Task_default_instance_;
@@ -57,6 +60,7 @@ extern TaskStatusDefaultTypeInternal _TaskStatus_default_instance_;
 }  // namespace worker
 PROTOBUF_NAMESPACE_OPEN
 template<> ::worker::HeartBeatRequest* Arena::CreateMaybeMessage<::worker::HeartBeatRequest>(Arena*);
+template<> ::worker::HeartBeatResponse* Arena::CreateMaybeMessage<::worker::HeartBeatResponse>(Arena*);
 template<> ::worker::Task* Arena::CreateMaybeMessage<::worker::Task>(Arena*);
 template<> ::worker::TaskStatus* Arena::CreateMaybeMessage<::worker::TaskStatus>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -189,7 +193,6 @@ class Task final :
     kStatusFieldNumber = 4,
     kTaskIdFieldNumber = 1,
     kPriorityFieldNumber = 2,
-    kCurrCapacityFieldNumber = 5,
   };
   // string commands = 3;
   void clear_commands();
@@ -237,15 +240,6 @@ class Task final :
   void _internal_set_priority(int32_t value);
   public:
 
-  // int32 curr_capacity = 5;
-  void clear_curr_capacity();
-  int32_t curr_capacity() const;
-  void set_curr_capacity(int32_t value);
-  private:
-  int32_t _internal_curr_capacity() const;
-  void _internal_set_curr_capacity(int32_t value);
-  public:
-
   // @@protoc_insertion_point(class_scope:worker.Task)
  private:
   class _Internal;
@@ -258,7 +252,6 @@ class Task final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr status_;
     int32_t taskid_;
     int32_t priority_;
-    int32_t curr_capacity_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -638,6 +631,185 @@ class HeartBeatRequest final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_task_2eproto;
 };
+// -------------------------------------------------------------------
+
+class HeartBeatResponse final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:worker.HeartBeatResponse) */ {
+ public:
+  inline HeartBeatResponse() : HeartBeatResponse(nullptr) {}
+  ~HeartBeatResponse() override;
+  explicit PROTOBUF_CONSTEXPR HeartBeatResponse(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  HeartBeatResponse(const HeartBeatResponse& from);
+  HeartBeatResponse(HeartBeatResponse&& from) noexcept
+    : HeartBeatResponse() {
+    *this = ::std::move(from);
+  }
+
+  inline HeartBeatResponse& operator=(const HeartBeatResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline HeartBeatResponse& operator=(HeartBeatResponse&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const HeartBeatResponse& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const HeartBeatResponse* internal_default_instance() {
+    return reinterpret_cast<const HeartBeatResponse*>(
+               &_HeartBeatResponse_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  friend void swap(HeartBeatResponse& a, HeartBeatResponse& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(HeartBeatResponse* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(HeartBeatResponse* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  HeartBeatResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<HeartBeatResponse>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const HeartBeatResponse& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const HeartBeatResponse& from) {
+    HeartBeatResponse::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(HeartBeatResponse* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "worker.HeartBeatResponse";
+  }
+  protected:
+  explicit HeartBeatResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTasksFieldNumber = 3,
+    kWorkerIdFieldNumber = 1,
+    kCurrentCapacityFieldNumber = 2,
+  };
+  // repeated .worker.TaskStatus tasks = 3;
+  int tasks_size() const;
+  private:
+  int _internal_tasks_size() const;
+  public:
+  void clear_tasks();
+  ::worker::TaskStatus* mutable_tasks(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::worker::TaskStatus >*
+      mutable_tasks();
+  private:
+  const ::worker::TaskStatus& _internal_tasks(int index) const;
+  ::worker::TaskStatus* _internal_add_tasks();
+  public:
+  const ::worker::TaskStatus& tasks(int index) const;
+  ::worker::TaskStatus* add_tasks();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::worker::TaskStatus >&
+      tasks() const;
+
+  // int32 workerId = 1;
+  void clear_workerid();
+  int32_t workerid() const;
+  void set_workerid(int32_t value);
+  private:
+  int32_t _internal_workerid() const;
+  void _internal_set_workerid(int32_t value);
+  public:
+
+  // int32 current_capacity = 2;
+  void clear_current_capacity();
+  int32_t current_capacity() const;
+  void set_current_capacity(int32_t value);
+  private:
+  int32_t _internal_current_capacity() const;
+  void _internal_set_current_capacity(int32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:worker.HeartBeatResponse)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::worker::TaskStatus > tasks_;
+    int32_t workerid_;
+    int32_t current_capacity_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_task_2eproto;
+};
 // ===================================================================
 
 
@@ -787,26 +959,6 @@ inline void Task::set_allocated_status(std::string* status) {
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:worker.Task.status)
-}
-
-// int32 curr_capacity = 5;
-inline void Task::clear_curr_capacity() {
-  _impl_.curr_capacity_ = 0;
-}
-inline int32_t Task::_internal_curr_capacity() const {
-  return _impl_.curr_capacity_;
-}
-inline int32_t Task::curr_capacity() const {
-  // @@protoc_insertion_point(field_get:worker.Task.curr_capacity)
-  return _internal_curr_capacity();
-}
-inline void Task::_internal_set_curr_capacity(int32_t value) {
-  
-  _impl_.curr_capacity_ = value;
-}
-inline void Task::set_curr_capacity(int32_t value) {
-  _internal_set_curr_capacity(value);
-  // @@protoc_insertion_point(field_set:worker.Task.curr_capacity)
 }
 
 // -------------------------------------------------------------------
@@ -1049,9 +1201,95 @@ inline void HeartBeatRequest::set_current_capacity(int32_t value) {
   // @@protoc_insertion_point(field_set:worker.HeartBeatRequest.current_capacity)
 }
 
+// -------------------------------------------------------------------
+
+// HeartBeatResponse
+
+// int32 workerId = 1;
+inline void HeartBeatResponse::clear_workerid() {
+  _impl_.workerid_ = 0;
+}
+inline int32_t HeartBeatResponse::_internal_workerid() const {
+  return _impl_.workerid_;
+}
+inline int32_t HeartBeatResponse::workerid() const {
+  // @@protoc_insertion_point(field_get:worker.HeartBeatResponse.workerId)
+  return _internal_workerid();
+}
+inline void HeartBeatResponse::_internal_set_workerid(int32_t value) {
+  
+  _impl_.workerid_ = value;
+}
+inline void HeartBeatResponse::set_workerid(int32_t value) {
+  _internal_set_workerid(value);
+  // @@protoc_insertion_point(field_set:worker.HeartBeatResponse.workerId)
+}
+
+// int32 current_capacity = 2;
+inline void HeartBeatResponse::clear_current_capacity() {
+  _impl_.current_capacity_ = 0;
+}
+inline int32_t HeartBeatResponse::_internal_current_capacity() const {
+  return _impl_.current_capacity_;
+}
+inline int32_t HeartBeatResponse::current_capacity() const {
+  // @@protoc_insertion_point(field_get:worker.HeartBeatResponse.current_capacity)
+  return _internal_current_capacity();
+}
+inline void HeartBeatResponse::_internal_set_current_capacity(int32_t value) {
+  
+  _impl_.current_capacity_ = value;
+}
+inline void HeartBeatResponse::set_current_capacity(int32_t value) {
+  _internal_set_current_capacity(value);
+  // @@protoc_insertion_point(field_set:worker.HeartBeatResponse.current_capacity)
+}
+
+// repeated .worker.TaskStatus tasks = 3;
+inline int HeartBeatResponse::_internal_tasks_size() const {
+  return _impl_.tasks_.size();
+}
+inline int HeartBeatResponse::tasks_size() const {
+  return _internal_tasks_size();
+}
+inline void HeartBeatResponse::clear_tasks() {
+  _impl_.tasks_.Clear();
+}
+inline ::worker::TaskStatus* HeartBeatResponse::mutable_tasks(int index) {
+  // @@protoc_insertion_point(field_mutable:worker.HeartBeatResponse.tasks)
+  return _impl_.tasks_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::worker::TaskStatus >*
+HeartBeatResponse::mutable_tasks() {
+  // @@protoc_insertion_point(field_mutable_list:worker.HeartBeatResponse.tasks)
+  return &_impl_.tasks_;
+}
+inline const ::worker::TaskStatus& HeartBeatResponse::_internal_tasks(int index) const {
+  return _impl_.tasks_.Get(index);
+}
+inline const ::worker::TaskStatus& HeartBeatResponse::tasks(int index) const {
+  // @@protoc_insertion_point(field_get:worker.HeartBeatResponse.tasks)
+  return _internal_tasks(index);
+}
+inline ::worker::TaskStatus* HeartBeatResponse::_internal_add_tasks() {
+  return _impl_.tasks_.Add();
+}
+inline ::worker::TaskStatus* HeartBeatResponse::add_tasks() {
+  ::worker::TaskStatus* _add = _internal_add_tasks();
+  // @@protoc_insertion_point(field_add:worker.HeartBeatResponse.tasks)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::worker::TaskStatus >&
+HeartBeatResponse::tasks() const {
+  // @@protoc_insertion_point(field_list:worker.HeartBeatResponse.tasks)
+  return _impl_.tasks_;
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
