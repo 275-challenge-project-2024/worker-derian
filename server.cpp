@@ -7,6 +7,8 @@
 #include <condition_variable>
 #include <grpcpp/grpcpp.h>
 #include <unordered_map>
+#include <chrono>
+#include <random>
 #include "task.grpc.pb.h"
 
 using grpc::Server;
@@ -18,7 +20,7 @@ using worker::TaskStatus;
 using worker::Scheduler;
 
 struct LocalTask {
-    int task_id; // Changed task_id to int
+    int task_id;
     std::string command;
     std::string status;
     int error_code;
@@ -33,34 +35,41 @@ private:
     int type;
     int total_capacity;
     int current_capacity;
-    std::list<LocalTask> tasks; // List to store tasks
-    std::unordered_map<int, std::string> previous_statuses; // Map to store previous statuses
+    std::list<LocalTask> tasks;
+    std::unordered_map<int, std::string> previous_statuses;
     std::mutex tasks_mutex;
     std::condition_variable task_cv;
     bool stop_flag = false;
-    std::vector<std::thread> thread_pool; // Thread pool
+    std::vector<std::thread> thread_pool;
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution;
+    std::uniform_int_distribution<int> status_distribution;
 
     void processTask() {
         while (true) {
-            LocalTask task(0, ""); // Default task_id is 0
+            LocalTask task(0, "");
             {
                 std::unique_lock<std::mutex> lock(tasks_mutex);
                 task_cv.wait(lock, [this] { return !tasks.empty() || stop_flag; });
 
                 if (stop_flag && tasks.empty()) break;
 
-                // Find the first task with status "in-progress"
                 auto it = std::find_if(tasks.begin(), tasks.end(), [](const LocalTask& t) { return t.status == "in-progress"; });
                 if (it != tasks.end()) {
                     task = *it;
-                    it->status = "processing"; // Update the task status to "processing"
+                    it->status = "processing";
                 }
                 else {
                     continue;
                 }
             }
 
-            int result = system(task.command.c_str()); // Execute the command and store the result
+            // Simulate processing time
+            int processing_time = distribution(generator);
+            std::this_thread::sleep_for(std::chrono::milliseconds(processing_time));
+
+            // Randomly determine the status (0 for completed, 1 for failed)
+            int result = status_distribution(generator);
 
             {
                 std::lock_guard<std::mutex> guard(tasks_mutex);
@@ -71,7 +80,7 @@ private:
                     }
                     else {
                         it->status = "failed";
-                        it->error_code = result; // Store the error code from the system command
+                        it->error_code = 1; // You can set any non-zero value for error_code to indicate failure
                     }
                 }
                 current_capacity++;
@@ -81,7 +90,7 @@ private:
 
 public:
     Worker(const std::string& id, int tp, int cap)
-        : worker_id(id), type(tp), total_capacity(cap), current_capacity(cap) {
+        : worker_id(id), type(tp), total_capacity(cap), current_capacity(cap), distribution(1000, 2000), status_distribution(0, 1) { // Distribution range set to 1 to 2 seconds in milliseconds
         for (int i = 0; i < total_capacity; ++i) {
             thread_pool.emplace_back(&Worker::processTask, this);
         }
@@ -107,7 +116,7 @@ public:
                 tasks.emplace_back(task_id, command);
                 current_capacity--;
                 task_cv.notify_one();
-                previous_statuses[task_id] = "in-progress"; // Initialize the previous status
+                previous_statuses[task_id] = "in-progress";
             }
             else {
                 std::cerr << "No capacity to handle new task." << std::endl;
@@ -116,31 +125,31 @@ public:
     }
 
     void sendHeartbeat() {
-        // Construct heartbeat message with current status
         std::lock_guard<std::mutex> guard(tasks_mutex);
         std::cout << "Worker ID: " << worker_id << "\n";
+        std::cout << "Type: " << type << "\n";
         std::cout << "Total Capacity: " << total_capacity << "\n";
         std::cout << "Current Capacity: " << current_capacity << "\n";
         std::cout << "Task List:\n";
         for (const auto& task : tasks) {
             auto prev_status_it = previous_statuses.find(task.task_id);
-            if (prev_status_it == previous_statuses.end() || prev_status_it->second != task.status) {
+            if ((task.status == "completed" || task.status == "failed") &&
+                (prev_status_it == previous_statuses.end() || prev_status_it->second != task.status)) {
                 std::cout << "  Task ID: " << task.task_id << ", Status: " << task.status;
                 if (task.status == "failed") {
                     std::cout << ", Error Code: " << task.error_code;
                 }
                 std::cout << std::endl;
-                previous_statuses[task.task_id] = task.status; // Update the previous status
+                previous_statuses[task.task_id] = task.status;
             }
         }
         std::cout << std::endl;
     }
 
     void run() {
-        // Simulation of periodic heartbeat
         while (true) {
             sendHeartbeat();
-            std::this_thread::sleep_for(std::chrono::seconds(1)); // Adjust timing as needed
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
 };
@@ -150,16 +159,12 @@ public:
     WorkerService(Worker* worker) : worker_(worker) {}
 
     Status SubmitTask(ServerContext* context, const Task* task, TaskStatus* status) override {
-        // Print basic task info
-        std::cout << "Received task with ID: " << task->taskid()
-            << ", Priority: " << task->priority()
-            << ", Command: " << task->commands()
-            << ", Status: " << task->status() << std::endl;
+       // std::cout << "Received task with ID: " << task->taskid()
+         //   << ", Priority: " << task->priority()
+           // << ", Status: " << task->status() << std::endl;
 
-        // Receive task into worker
         worker_->receiveTask(task->taskid(), task->commands());
 
-        // Set status and return a successful response
         status->set_status("Received");
         status->set_taskid(task->taskid());
         return Status::OK;
@@ -171,7 +176,7 @@ private:
 
 void RunServer() {
     std::string server_address("0.0.0.0:50051");
-    Worker worker("13454476000", 1, 3); // Changed capacity from 10 to 5
+    Worker worker("13454476000", 1, 20);
     WorkerService service(&worker);
 
     ServerBuilder builder;

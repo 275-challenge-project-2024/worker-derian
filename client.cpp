@@ -43,36 +43,66 @@ private:
 int main(int argc, char** argv) {
     SchedulerClient client(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
 
-    // Example task submissions
-    std::string r1 = client.SubmitTask(123, 1, "echo Hello World", "in-progress");
+    std::string r1 = client.SubmitTask(1023, 1, "echo Taks 1", "in-progress");
     std::cout << "Client received: " << r1 << std::endl;
 
-    std::string r2 = client.SubmitTask(456, 5, "echo Process File", "in-progress");
+    std::string r2 = client.SubmitTask(1987, 2, "echo Task 2", "in-progress");
     std::cout << "Client received: " << r2 << std::endl;
 
-    std::string r3 = client.SubmitTask(11, 5, "echo Backup Logs", "in-progress");
+    std::string r3 = client.SubmitTask(1456, 3, "echo Task 3", "in-progress");
     std::cout << "Client received: " << r3 << std::endl;
 
-    std::string r4 = client.SubmitTask(22, 3, "echo Clean Temp", "in-progress");
+    std::string r4 = client.SubmitTask(589, 4, "echo Task 4", "in-progress");
     std::cout << "Client received: " << r4 << std::endl;
 
-    std::string r5 = client.SubmitTask(54, 4, "echo Update System", "in-progress");
+    std::string r5 = client.SubmitTask(1221, 5, "echo Task 5", "in-progress");
     std::cout << "Client received: " << r5 << std::endl;
 
-    std::string r6 = client.SubmitTask(60, 2, "echo Update System1", "in-progress");
+    std::string r6 = client.SubmitTask(756, 6, "echo Task 6", "in-progress");
     std::cout << "Client received: " << r6 << std::endl;
 
-    std::string r7 = client.SubmitTask(3, 5, "echo Update System2", "in-progress");
+    std::string r7 = client.SubmitTask(1945, 7, "echo Task 7", "in-progress");
     std::cout << "Client received: " << r7 << std::endl;
 
-    std::string r8 = client.SubmitTask(2093, 4, "echo Update System3", "in-progress");
+    std::string r8 = client.SubmitTask(300, 8, "echo Task 8", "in-progress");
     std::cout << "Client received: " << r8 << std::endl;
 
-    std::string r9 = client.SubmitTask(56823, 2, "echo Update System4", "in-progress");
+    std::string r9 = client.SubmitTask(1749, 9, "echo Task 9", "in-progress");
     std::cout << "Client received: " << r9 << std::endl;
 
-    std::string r10 = client.SubmitTask(15479, 5, "echo Update System5", "in-progress");
+    std::string r10 = client.SubmitTask(1348, 10, "echo Task 10", "in-progress");
     std::cout << "Client received: " << r10 << std::endl;
+
+    std::string r11 = client.SubmitTask(622, 11, "echo Task 11", "in-progress");
+    std::cout << "Client received: " << r11 << std::endl;
+
+    std::string r12 = client.SubmitTask(1589, 12, "echo Task 12", "in-progress");
+    std::cout << "Client received: " << r12 << std::endl;
+
+    std::string r13 = client.SubmitTask(947, 13, "echo Task 13", "in-progress");
+    std::cout << "Client received: " << r13 << std::endl;
+
+    std::string r14 = client.SubmitTask(1934, 14, "echo Task 14", "in-progress");
+    std::cout << "Client received: " << r14 << std::endl;
+
+    std::string r15 = client.SubmitTask(122, 15, "echo Task 15", "in-progress");
+    std::cout << "Client received: " << r15 << std::endl;
+
+    std::string r16 = client.SubmitTask(1811, 16, "echo Task 16", "in-progress");
+    std::cout << "Client received: " << r16 << std::endl;
+
+    std::string r17 = client.SubmitTask(763, 17, "echo Task 17", "in-progress");
+    std::cout << "Client received: " << r17 << std::endl;
+
+    std::string r18 = client.SubmitTask(1366, 18, "echo Task 18", "in-progress");
+    std::cout << "Client received: " << r18 << std::endl;
+
+    std::string r19 = client.SubmitTask(547, 19, "echo Task 19", "in-progress");
+    std::cout << "Client received: " << r19 << std::endl;
+
+    std::string r20 = client.SubmitTask(1894, 20, "echo Task 20", "in-progress");
+    std::cout << "Client received: " << r20 << std::endl;
+
 
     return 0;
 }
