@@ -66,11 +66,9 @@ private:
                 }
             }
 
-            // Simulate processing time
             int processing_time = distribution(generator);
             std::this_thread::sleep_for(std::chrono::milliseconds(processing_time));
-
-            // Randomly determine the status (0 for completed, 1 for failed)
+         
             int result = status_distribution(generator);
 
             {
@@ -91,7 +89,7 @@ private:
 
 public:
     Worker(const std::string& id, int tp, int cap)
-        : worker_id(id), type(tp), total_capacity(cap), current_capacity(cap), distribution(1000, 2000), status_distribution(0, 1) { // Distribution range set to 1 to 2 seconds in milliseconds
+        : worker_id(id), type(tp), total_capacity(cap), current_capacity(cap), distribution(1000, 2000), status_distribution(0, 1) { 
         for (int i = 0; i < total_capacity; ++i) {
             thread_pool.emplace_back(&Worker::processTask, this);
         }
@@ -134,6 +132,8 @@ public:
                 response.set_workerid(std::stoi(worker_id));
                 response.set_current_capacity(current_capacity);
 
+                std::vector<int> tasks_to_remove;
+
                 for (const auto& task : tasks) {
                     auto prev_status_it = previous_statuses.find(task.task_id);
                     if ((task.status == "completed" || task.status == "failed") &&
@@ -142,16 +142,23 @@ public:
                         task_status->set_taskid(task.task_id);
                         task_status->set_status(task.status);
                         previous_statuses[task.task_id] = task.status;
+                        tasks_to_remove.push_back(task.task_id);
                     }
                 }
                 stream->Write(response);
 
-                // Print heartbeat contents
                 std::cout << "Sending Heartbeat:" << std::endl;
                 std::cout << "  Worker ID: " << response.workerid() << std::endl;
                 std::cout << "  Current Capacity: " << response.current_capacity() << std::endl;
                 for (const auto& task_status : response.tasks()) {
                     std::cout << "  Task ID: " << task_status.taskid() << ", Status: " << task_status.status() << std::endl;
+                }
+
+                for (int task_id : tasks_to_remove) {
+                    auto it = std::find_if(tasks.begin(), tasks.end(), [&](const LocalTask& t) { return t.task_id == task_id; });
+                    if (it != tasks.end()) {
+                        tasks.erase(it);
+                    }
                 }
             }
             std::this_thread::sleep_for(std::chrono::seconds(2));
